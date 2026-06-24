@@ -7,15 +7,16 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminUserController;
 
-Route::redirect('/', '/admin/login');
+Route::get('/', function () {
+    return redirect()->route('admin.login');
+});
 
 //Admin Guest Routes (Login / Authentication)
 // Restrict these routes to guests only so logged-in admins don't re-login
-Route::middleware('guest')->prefix('admin')->group(function () {
+Route::prefix('admin')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
     Route::post('/login', [AdminAuthController::class, 'login']);
 });
-
 // Logout route requires an active web session
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout')->middleware('auth');
 
