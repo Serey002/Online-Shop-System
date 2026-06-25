@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Panel') - Foodai</title>
+    <title>@yield('title', 'Admin Panel') - FoodSR</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -19,7 +19,7 @@
                 <div class="w-8 h-8 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-sm shadow-orange-600/30">
                     <i class="fa-solid fa-bag-shopping text-sm"></i>
                 </div>
-                <span class="text-xl font-bold tracking-tight text-gray-900">Food<span class="text-orange-600">ai</span></span>
+                <span class="text-xl font-bold tracking-tight text-gray-900">Food<span class="text-orange-600">SR</span></span>
             </div>
 
             <nav class="flex-1 p-4 space-y-1 overflow-y-auto text-sm font-medium text-gray-500">
@@ -49,6 +49,10 @@
                 <a href="{{ route('categories.index') }}" class="flex items-center justify-between px-4 py-3 rounded-xl transition {{ request()->routeIs('categories.*') ? 'bg-orange-50 text-orange-600 font-semibold' : 'hover:bg-gray-50 hover:text-gray-900' }}">
                     <span class="flex items-center gap-3"><i class="fa-solid fa-layer-group w-5"></i> Categories</span>
                 </a>
+
+                <a href="{{ route('admin.settings.edit') }}" class="flex items-center justify-between px-4 py-3 rounded-xl transition {{ request()->routeIs('admin.settings.*') ? 'bg-orange-50 text-orange-600 font-semibold' : 'hover:bg-gray-50 hover:text-gray-900' }}">
+                    <span class="flex items-center gap-3"><i class="fa-solid fa-sliders w-5"></i> Settings</span>
+                </a>
             </nav>
 
             <div class="p-4 border-t border-gray-100 bg-gray-50/50">
@@ -76,13 +80,18 @@
                         <i class="fa-regular fa-bell"></i>
                         <span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-emerald-500"></span>
                     </button>
+                    
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-black text-xs uppercase border border-orange-200 flex-shrink-0">
-                            {{ strtoupper(substr(Auth::user()->name ?? 'AD', 0, 2)) }}
+                        <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 overflow-hidden flex items-center justify-center font-black text-xs uppercase border border-orange-200 flex-shrink-0">
+                            @if(Auth::user() && Auth::user()->image)
+                                <img src="{{ asset('storage/' . Auth::user()->image) }}" alt="Admin Profile" class="w-full h-full object-cover">
+                            @else
+                                {{ strtoupper(substr(Auth::user()->name ?? 'AD', 0, 2)) }}
+                            @endif
                         </div>
                         <div class="hidden sm:block text-left">
                             <span class="block text-sm font-bold text-gray-900 leading-tight">{{ Auth::user()->name ?? 'Admin' }}</span>
-                            <span class="block text-[11px] font-medium text-gray-400">{{ Auth::user()->email ?? 'admin@gmail.com' }}</span>
+                            <span class="block text-[11px] font-medium text-gray-400 mt-0.5">{{ Auth::user()->email ?? 'admin@gmail.com' }}</span>
                         </div>
                     </div>
                 </div>

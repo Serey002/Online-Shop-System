@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\ProfileController;
 
 Route::get('/', function () {
     return redirect()->route('admin.login');
@@ -52,4 +53,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 
     //Custemer
     Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+
+    // Profile Settings Routes
+    Route::get('/settings', [ProfileController::class, 'edit'])->name('admin.settings.edit');
+    Route::put('/settings', [ProfileController::class, 'update'])->name('admin.settings.update');
 });
