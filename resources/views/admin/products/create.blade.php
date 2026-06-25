@@ -1,22 +1,20 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Add Product')
-@section('page-title', 'Create Catalog Entry')
+@section('title', 'Add New Menu Item')
 
 @section('content')
-<div class="max-w-3xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-    <div class="p-6 border-b border-gray-200 bg-gray-50/50">
-        <h3 class="text-lg font-bold text-gray-800">New Product Form</h3>
-        <p class="text-sm text-gray-500">Input descriptions, setup pricing bounds, and upload item snapshots.</p>
-    </div>
+<div class="mb-8">
+    <h2 class="text-2xl font-black text-gray-900 tracking-tight">Create Product</h2>
+    <p class="text-sm text-gray-400 mt-0.5">Add a new item to your online menu selection catalog.</p>
+</div>
 
+<div class="max-w-3xl bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
     <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
         @csrf
 
         @if ($errors->any())
-            <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3">
-                <i class="fa-solid fa-circle-exclamation text-rose-500 mt-0.5 text-lg"></i>
-                <ul class="text-sm text-rose-700 font-medium list-disc list-inside space-y-0.5">
+            <div class="p-4 bg-rose-50 border border-rose-100 rounded-xl">
+                <ul class="text-xs text-rose-600 font-semibold list-disc list-inside space-y-1">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -26,16 +24,16 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2">
-                <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">Product Name *</label>
-                <input type="text" name="name" id="name" value="{{ old('name') }}" required 
-                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition text-sm">
+                <label for="name" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Item Display Name *</label>
+                <input type="text" name="name" id="name" value="{{ old('name') }}" required placeholder="e.g., Grilled Beef Burger"
+                    class="w-full px-4 py-3 bg-[#F4F5F7] border-0 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition font-semibold text-gray-800 placeholder-gray-400">
             </div>
 
             <div>
-                <label for="category_id" class="block text-sm font-semibold text-gray-700 mb-2">Assign Category Matrix *</label>
+                <label for="category_id" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Food Category Menu Group *</label>
                 <select name="category_id" id="category_id" required 
-                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition text-sm">
-                    <option value="" disabled selected>Choose a category...</option>
+                    class="w-full px-4 py-3 bg-[#F4F5F7] border-0 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition font-semibold text-gray-600 cursor-pointer">
+                    <option value="" disabled selected>Assign Group Link...</option>
                     @foreach($categories as $category)
                         <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                     @endforeach
@@ -43,40 +41,33 @@
             </div>
 
             <div>
-                <label for="price" class="block text-sm font-semibold text-gray-700 mb-2">Price ($ USD) *</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 font-medium text-sm pointer-events-none">$</span>
-                    <input type="number" name="price" id="price" step="0.01" min="0" value="{{ old('price') }}" required
-                        class="w-full pl-8 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition text-sm">
-                </div>
+                <label for="price" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Price ($ USD Value) *</label>
+                <input type="number" name="price" id="price" step="0.01" min="0" value="{{ old('price') }}" required placeholder="0.00"
+                    class="w-full px-4 py-3 bg-[#F4F5F7] border-0 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition font-semibold text-gray-800 placeholder-gray-400">
             </div>
 
             <div>
-                <label for="stock" class="block text-sm font-semibold text-gray-700 mb-2">Initial Stock Vault Limit *</label>
+                <label for="stock" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Available Vault Stock Count *</label>
                 <input type="number" name="stock" id="stock" min="0" value="{{ old('stock', 0) }}" required
-                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition text-sm">
+                    class="w-full px-4 py-3 bg-[#F4F5F7] border-0 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition font-semibold text-gray-800">
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Product Image File</label>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Item Banner Snapshot Image File</label>
                 <input type="file" name="image" id="image" accept="image/*"
-                    class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 file:cursor-pointer cursor-pointer border border-gray-300 rounded-xl p-1">
+                    class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 border-0 bg-[#F4F5F7] p-2 rounded-xl cursor-pointer">
             </div>
 
             <div class="md:col-span-2">
-                <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">Product Description</label>
-                <textarea name="description" id="description" rows="4"
-                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition text-sm">{{ old('description') }}</textarea>
+                <label for="description" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Menu Entry Item Ingredients/Description</label>
+                <textarea name="description" id="description" rows="4" placeholder="Detail standard options, calories, recipe summaries..."
+                    class="w-full px-4 py-3 bg-[#F4F5F7] border-0 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition font-semibold text-gray-800 placeholder-gray-400">{{ old('description') }}</textarea>
             </div>
         </div>
 
-        <div class="pt-4 border-t border-gray-200 flex items-center justify-end gap-3">
-            <a href="{{ route('products.index') }}" class="px-5 py-2.5 border border-gray-300 text-gray-700 font-semibold text-sm rounded-xl hover:bg-gray-50 transition">
-                Cancel
-            </a>
-            <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md transition">
-                Save Product
-            </button>
+        <div class="pt-5 border-t border-gray-100 flex items-center justify-end gap-3">
+            <a href="{{ route('products.index') }}" class="px-5 py-3 bg-gray-100 text-gray-600 font-bold text-xs rounded-xl hover:bg-gray-200 transition uppercase tracking-wider">Cancel</a>
+            <button type="submit" class="px-5 py-3 bg-orange-600 text-white font-bold text-xs rounded-xl shadow-sm hover:bg-orange-700 transition uppercase tracking-wider">Save Menu Item</button>
         </div>
     </form>
 </div>

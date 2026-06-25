@@ -1,23 +1,21 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Edit Category')
-@section('page-title', 'Modify Category Group')
+@section('title', 'Modify Category')
 
 @section('content')
-<div class="max-w-2xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-    <div class="p-6 border-b border-gray-200 bg-gray-50/50">
-        <h3 class="text-lg font-bold text-gray-800">Edit Category Attributes</h3>
-        <p class="text-sm text-gray-500">Update descriptive naming attributes or change routing structure values.</p>
-    </div>
+<div class="mb-8">
+    <h2 class="text-2xl font-black text-gray-900 tracking-tight">Edit Category</h2>
+    <p class="text-sm text-gray-400 mt-0.5">Modify properties for structural segment entry #{{ $category->id }}.</p>
+</div>
 
+<div class="max-w-2xl bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
     <form action="{{ route('categories.update', $category->id) }}" method="POST" class="p-6 space-y-6">
         @csrf
         @method('PUT')
 
         @if ($errors->any())
-            <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3">
-                <i class="fa-solid fa-circle-exclamation text-rose-500 mt-0.5 text-lg"></i>
-                <ul class="text-sm text-rose-700 font-medium list-disc list-inside space-y-0.5">
+            <div class="p-4 bg-rose-50 border border-rose-100 rounded-xl">
+                <ul class="text-xs text-rose-600 font-semibold list-disc list-inside space-y-1">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -27,28 +25,21 @@
 
         <div class="space-y-5">
             <div>
-                <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">Category Name *</label>
+                <label for="name" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Category Title *</label>
                 <input type="text" name="name" id="name" value="{{ old('name', $category->name) }}" required
-                    class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition text-sm">
+                    class="w-full px-4 py-3 bg-[#F4F5F7] border-0 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition font-semibold text-gray-800">
             </div>
 
             <div>
-                <label for="slug" class="block text-sm font-semibold text-gray-700 mb-2">URL Route Slug *</label>
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 font-mono text-xs pointer-events-none">/categories/</span>
-                    <input type="text" name="slug" id="slug" value="{{ old('slug', $category->slug) }}" required
-                        class="w-full pl-24 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition text-sm font-mono">
-                </div>
+                <label for="slug" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">URL Route Slug *</label>
+                <input type="text" name="slug" id="slug" value="{{ old('slug', $category->slug) }}" required
+                    class="w-full px-4 py-3 bg-[#F4F5F7] border-0 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition font-mono font-semibold text-gray-600">
             </div>
         </div>
 
-        <div class="pt-5 border-t border-gray-200 flex items-center justify-end gap-3">
-            <a href="{{ route('categories.index') }}" class="px-5 py-2.5 border border-gray-300 text-gray-700 font-semibold text-sm rounded-xl hover:bg-gray-50 transition">
-                Cancel Changes
-            </a>
-            <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md transition">
-                Apply Updates
-            </button>
+        <div class="pt-5 border-t border-gray-100 flex items-center justify-end gap-3">
+            <a href="{{ route('categories.index') }}" class="px-5 py-3 bg-gray-100 text-gray-600 font-bold text-xs rounded-xl hover:bg-gray-200 transition uppercase tracking-wider">Cancel Changes</a>
+            <button type="submit" class="px-5 py-3 bg-orange-600 text-white font-bold text-xs rounded-xl shadow-sm hover:bg-orange-700 transition uppercase tracking-wider">Apply updates</button>
         </div>
     </form>
 </div>

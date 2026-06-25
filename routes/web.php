@@ -49,4 +49,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders.index');
     Route::get('/orders/{id}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
     Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+
+    //Custemer
+    Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
 });
