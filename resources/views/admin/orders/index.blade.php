@@ -77,14 +77,25 @@
                             {{ $order->created_at ? $order->created_at->format('M d, Y \a\t g:i A') : 'N/A' }}
                         </span>
                     </td>
-                    <td class="px-6 py-5">
-                        <span class="text-gray-900 font-bold block">
-                            {{ $order->user->name ?? 'Guest Customer' }}
-                        </span>
-                        <span class="text-gray-400 font-medium text-[11px] block mt-0.5">
-                            {{ $order->user->phone ?? 'No Phone Contact' }}
-                        </span>
+                    
+                    <td class="px-6 py-5 flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full overflow-hidden bg-orange-100 border border-orange-200 text-orange-600 flex items-center justify-center font-bold text-[10px] uppercase flex-shrink-0">
+                            @if($order->user && $order->user->image)
+                                <img src="{{ asset('storage/' . $order->user->image) }}" alt="Customer Avatar" class="w-full h-full object-cover">
+                            @else
+                                {{ strtoupper(substr($order->user->name ?? 'CS', 0, 2)) }}
+                            @endif
+                        </div>
+                        <div>
+                            <span class="text-gray-900 font-bold block">
+                                {{ $order->user->name ?? 'Guest Customer' }}
+                            </span>
+                            <span class="text-gray-400 font-medium text-[11px] block mt-0.5">
+                                {{ $order->user->phone ?? 'No Phone Contact' }}
+                            </span>
+                        </div>
                     </td>
+
                     <td class="px-6 py-5 max-w-xs">
                         <p class="text-gray-700 truncate font-medium">
                             {{ $order->items_summary ?? 'Standard Kitchen Meal Selection' }}
