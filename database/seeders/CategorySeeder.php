@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
@@ -13,14 +13,20 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        $categories = [
-            ['id' => 1, 'name' => 'Electronics', 'slug' => 'electronics'],
-            ['id' => 2, 'name' => 'Clothing', 'slug' => 'clothing'],
-            ['id' => 3, 'name' => 'Shoes', 'slug' => 'shoes'],
+        $foodCategories = [
+            'Bakery',
+            'Burger',
+            'Beverage',
+            'Chicken',
+            'Pizza',
+            'Seafood'
         ];
 
-        foreach ($categories as $category) {
-            Category::create($category);
+        foreach ($foodCategories as $name) {
+            Category::updateOrCreate(
+                ['slug' => Str::slug($name)], // Keeps it clean if run multiple times
+                ['name' => $name]
+            );
         }
     }
 }
