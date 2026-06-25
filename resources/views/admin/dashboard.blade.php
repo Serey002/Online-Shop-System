@@ -135,28 +135,33 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="text-gray-400 font-bold text-[10px] uppercase tracking-wider bg-gray-50/40 border-b border-gray-50">
-                        <th class="px-6 py-3">Customer Profile</th>
-                        <th class="px-6 py-3">Email Address</th>
-                        <th class="px-6 py-3">Placed Date</th>
-                        <th class="px-6 py-3 text-right">Order Value</th>
+                        <th class="px-6 py-4">Customer Profile</th>
+                        <th class="px-6 py-4">Email Address</th>
+                        <th class="px-6 py-4">Placed Date</th>
+                        <th class="px-6 py-4 text-right">Order Value</th>
                     </tr>
                 </thead>
                 <tbody class="text-[11px] font-semibold text-gray-600 divide-y divide-gray-50">
                     @forelse($recentOrders ?? [] as $order)
                     <tr class="hover:bg-gray-50/50 transition">
-                        <td class="px-6 py-3 flex items-center gap-2">
-                            <div class="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-[9px] uppercase">
-                                {{ strtoupper(substr($order->user->name ?? 'CS', 0, 2)) }}
+                        <td class="px-6 py-3.5 flex items-center gap-3">
+                            <!-- 🖼️ Real Dynamic Customer Avatar Check -->
+                            <div class="w-7 h-7 rounded-full overflow-hidden bg-orange-100 border border-orange-200 text-orange-600 flex items-center justify-center font-bold text-[10px] uppercase flex-shrink-0">
+                                @if($order->user && $order->user->image)
+                                    <img src="{{ asset('storage/' . $order->user->image) }}" alt="Customer Avatar" class="w-full h-full object-cover">
+                                @else
+                                    {{ strtoupper(substr($order->user->name ?? 'CS', 0, 2)) }}
+                                @endif
                             </div>
                             <span class="text-gray-900 font-bold">{{ $order->user->name ?? 'Guest User' }}</span>
                         </td>
-                        <td class="px-6 py-3 text-gray-500 font-medium">
+                        <td class="px-6 py-3.5 text-gray-500 font-medium">
                             {{ $order->user->email ?? 'N/A' }}
                         </td>
-                        <td class="px-6 py-3 text-gray-400 font-medium">
+                        <td class="px-6 py-3.5 text-gray-400 font-medium">
                             {{ $order->created_at ? $order->created_at->format('d.m.Y') : 'N/A' }}
                         </td>
-                        <td class="px-6 py-3 text-right text-orange-600 font-black">
+                        <td class="px-6 py-3.5 text-right text-orange-600 font-black">
                             ${{ number_format($order->total_price ?? 0.00, 2) }}
                         </td>
                     </tr>
