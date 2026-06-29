@@ -51,32 +51,41 @@ class ProductController extends Controller
         return view('admin.products.edit', compact('product', 'categories')); // [cite: 63]
     }
 
-    public function update(Request $request, Product $product)
+   public function update(Request $request, $id)
     {
+        $product = Product::findOrFail($id);
+
         $request->validate([
-            'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+            'image' => 'nullable|image|max:20048',
+            'image_url' => 'nullable|url',
+            'description' => 'nullable|string',
         ]);
 
-        $data = $request->all();
+        // Update basic text properties
+        $product->name = $request->name;
+        $product->category_id = $request->category_id;
+        $product->price = $request->price;
+        $product->stock = $request->stock;
+        $product->description = $request->description;
 
+        // Handle Image Source Priority Logic
         if ($request->hasFile('image')) {
-            // Delete old image if it exists to keep storage clean
-            if ($product->image) {
-                Storage::disk('public')->delete($product->image);
-            }
-            $data['image'] = $request->file('image')->store('products', 'public');
+            // If a new physical file is uploaded, store it locally
+            $path = $request->file('image')->store('products', 'public');
+            $product->image = $path;
+        } elseif ($request->filled('image_url')) {
+            // Otherwise, if an external URL link was provided, store the URL string directly
+            $product->image = $request->image_url;
         }
 
-        $product->update($data);
+        $product->save();
 
         return redirect()->route('products.index')->with('success', 'Product updated successfully!');
     }
-
     public function destroy(Product $product)
     {
         if ($product->image) {

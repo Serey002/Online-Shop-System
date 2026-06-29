@@ -15,26 +15,26 @@
         <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
             <i class="fa-solid fa-magnifying-glass text-xs"></i>
         </span>
-        <input type="text" placeholder="Search customer records..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-medium">
+        <input type="text" id="customerSearchInput" placeholder="Search customer records..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-medium">
     </div>
     
     <div>
-        <select class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
-            <option>All Tiers (VIP / Normal)</option>
-            <option>VIP Gold Member</option>
-            <option>Regular Consumer</option>
+        <select id="tierFilterSelect" class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
+            <option value="all">All Tiers (VIP / Normal)</option>
+            <option value="vip">VIP Gold Member</option>
+            <option value="regular">Regular Consumer</option>
         </select>
     </div>
 
     <div>
-        <select class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
-            <option>Sort by: Newest Joined</option>
-            <option>Sort by: Highest Spent</option>
+        <select id="sortOrderSelect" class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
+            <option value="newest">Sort by: Newest Joined</option>
+            <option value="highest_spent">Sort by: Highest Spent</option>
         </select>
     </div>
 
-    <button class="bg-white border border-gray-200 text-gray-600 font-bold text-xs py-2.5 rounded-xl transition hover:bg-gray-50 flex items-center justify-center gap-2">
-        <i class="fa-solid fa-sliders text-gray-400 text-xs"></i> Filter
+    <button id="resetFiltersButton" class="bg-white border border-gray-200 text-gray-600 font-bold text-xs py-2.5 rounded-xl transition hover:bg-gray-50 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-sliders text-gray-400 text-xs"></i> Reset
     </button>
 </div>
 
@@ -54,10 +54,16 @@
                     <th class="px-6 py-4">Status Class</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 text-xs text-gray-600 font-semibold">
+            <tbody id="customersTableBody" class="divide-y divide-gray-100 text-xs text-gray-600 font-semibold">
                 
                 @forelse($users as $user)
-                <tr class="hover:bg-gray-50/40 transition group">
+                <tr class="customer-row hover:bg-gray-50/40 transition group"
+                    data-name="{{ strtolower($user->name) }}"
+                    data-email="{{ strtolower($user->email) }}"
+                    data-id="{{ $user->id }}"
+                    data-spent="{{ $user->total_spent ?? 0.00 }}"
+                    data-date="{{ $user->created_at ? $user->created_at->timestamp : 0 }}">
+                    
                     <td class="px-6 py-5 text-center">
                         <input type="checkbox" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500/20">
                     </td>
@@ -94,7 +100,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr id="emptyRowPlaceholder">
                     <td colspan="7" class="px-6 py-12 text-center text-gray-400 font-medium">
                         <div class="flex flex-col items-center justify-center gap-2">
                             <i class="fa-solid fa-user-slash text-xl text-gray-300"></i>
@@ -104,8 +110,98 @@
                 </tr>
                 @endforelse
 
+                <tr id="noMatchRowPlaceholder" class="hidden">
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-400 font-medium bg-slate-50/40">
+                        <div class="flex flex-col items-center justify-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass text-lg text-gray-300"></i>
+                            <span>No records found matching your active filter criteria.</span>
+                        </div>
+                    </td>
+                </tr>
+
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('customerSearchInput');
+    const tierSelect = document.getElementById('tierFilterSelect');
+    const sortSelect = document.getElementById('sortOrderSelect');
+    const resetBtn = document.getElementById('resetFiltersButton');
+    
+    const tableBody = document.getElementById('customersTableBody');
+    const noMatchRow = document.getElementById('noMatchRowPlaceholder');
+
+    function applyFiltersAndSort() {
+        const query = searchInput.value.trim().toLowerCase();
+        const selectedTier = tierSelect.value;
+        const selectedSort = sortSelect.value;
+        
+        // Convert to array for sorting/filtering manipulation updates
+        const rowsArray = Array.from(tableBody.querySelectorAll('.customer-row'));
+        let visibleCount = 0;
+
+        rowsArray.forEach(row => {
+            const name = row.getAttribute('data-name');
+            const email = row.getAttribute('data-email');
+            const id = row.getAttribute('data-id');
+            const totalSpent = parseFloat(row.getAttribute('data-spent'));
+
+            // 1. Text Query Matching evaluation logic rules
+            const matchesText = name.includes(query) || email.includes(query) || id.includes(query);
+
+            // 2. Mock Tier Calculation Rule (Matches your UI design context logic)
+            let matchesTier = true;
+            if (selectedTier === 'vip') {
+                matchesTier = (totalSpent >= 100.00); // Automatically marks users spending over $100 as VIP
+            } else if (selectedTier === 'regular') {
+                matchesTier = (totalSpent < 100.00);
+            }
+
+            // Combine visibility validation states
+            if (matchesText && matchesTier) {
+                row.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                row.classList.add('hidden');
+            }
+        });
+
+        // 3. Document Node Sorting Manipulation Engine
+        rowsArray.sort((a, b) => {
+            if (selectedSort === 'highest_spent') {
+                return parseFloat(b.getAttribute('data-spent')) - parseFloat(a.getAttribute('data-spent'));
+            } else {
+                // Fallback Default: Order by registration unix timestamps descending (Newest Joined)
+                return parseInt(b.getAttribute('data-date')) - parseInt(a.getAttribute('data-date'));
+            }
+        });
+
+        // Re-append sorted elements inside the node tree without re-rendering loops
+        rowsArray.forEach(row => tableBody.appendChild(row));
+
+        // Display empty status cards fallback conditional rendering
+        if (visibleCount === 0 && rowsArray.length > 0) {
+            noMatchRow.classList.remove('hidden');
+            tableBody.appendChild(noMatchRow);
+        } else {
+            noMatchRow.classList.add('hidden');
+        }
+    }
+
+    // Attach control listeners hooks
+    searchInput.addEventListener('input', applyFiltersAndSort);
+    tierSelect.addEventListener('change', applyFiltersAndSort);
+    sortSelect.addEventListener('change', applyFiltersAndSort);
+
+    resetBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        tierSelect.value = 'all';
+        sortSelect.value = 'newest';
+        applyFiltersAndSort();
+    });
+});
+</script>
 @endsection

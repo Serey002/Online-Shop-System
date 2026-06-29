@@ -55,7 +55,13 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Replace Product Image</label>
+                <label for="image_url" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Product Image Link URL</label>
+                <input type="url" name="image_url" id="image_url" placeholder="https://example.com/food-image.jpg" value="{{ old('image_url', filter_var($product->image, FILTER_VALIDATE_URL) ? $product->image : '') }}"
+                    class="w-full px-4 py-3 bg-[#F4F5F7] border-0 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition font-semibold text-gray-800">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Or Upload File Image</label>
                 <input type="file" name="image" id="image" accept="image/*"
                     class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 border-0 bg-[#F4F5F7] p-2 rounded-xl cursor-pointer">
             </div>
@@ -64,7 +70,7 @@
                 <span class="block text-xs font-bold uppercase tracking-wider text-gray-400">Current Image Snapshot Preview</span>
                 <div class="w-24 h-24 rounded-2xl bg-gray-50 overflow-hidden border border-gray-100 shadow-inner flex items-center justify-center">
                     @if($product->image)
-                        <img src="{{ asset('storage/' . $product->image) }}" alt="Preview" class="w-full h-full object-cover">
+                        <img src="{{ filter_var($product->image, FILTER_VALIDATE_URL) ? $product->image : asset('storage/' . $product->image) }}" alt="Preview" class="w-full h-full object-cover">
                     @else
                         <span class="text-gray-300 text-[10px] uppercase font-bold">No Image</span>
                     @endif

@@ -10,7 +10,7 @@
     </div>
     <div class="flex items-center gap-2 text-xs font-bold text-gray-500">
         <span class="bg-orange-100 text-orange-600 px-3 py-1.5 rounded-xl">
-            {{ $orders->count() }} Live Records
+            <span id="liveRecordsCount">{{ $orders->count() }}</span> Live Records
         </span>
     </div>
 </div>
@@ -20,29 +20,29 @@
         <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
             <i class="fa-solid fa-magnifying-glass text-xs"></i>
         </span>
-        <input type="text" placeholder="Search by customer name or order ID..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-medium">
+        <input type="text" id="orderSearchInput" placeholder="Search by customer name or order ID..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-medium">
     </div>
     
     <div>
-        <select class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
-            <option>All Methods (Delivery/Pickup)</option>
-            <option>Delivery Service</option>
-            <option>Dine-in / Pickup</option>
+        <select id="methodFilterSelect" class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
+            <option value="all">All Methods (Delivery/Pickup)</option>
+            <option value="delivery service">Delivery Service</option>
+            <option value="dine in">Dine-in / Pickup</option>
         </select>
     </div>
 
     <div>
-        <select class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
-            <option>All Order Statuses</option>
-            <option>Pending Kitchen Preparation</option>
-            <option>Out For Delivery</option>
-            <option>Completed Orders</option>
-            <option>Cancelled Tickets</option>
+        <select id="statusFilterSelect" class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
+            <option value="all">All Order Statuses</option>
+            <option value="preparing">Preparing</option>
+            <option value="with courier">With Courier</option>
+            <option value="served & done">Served & Done</option>
+            <option value="cancelled">Cancelled</option>
         </select>
     </div>
 
-    <button class="bg-white border border-gray-200 text-gray-600 font-bold text-xs py-2.5 rounded-xl transition hover:bg-gray-50 flex items-center justify-center gap-2">
-        <i class="fa-solid fa-sliders text-gray-400 text-xs"></i> Advanced Filter
+    <button id="resetFiltersButton" class="bg-white border border-gray-200 text-gray-600 font-bold text-xs py-2.5 rounded-xl transition hover:bg-gray-50 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-sliders text-gray-400 text-xs"></i> Reset Filter
     </button>
 </div>
 
@@ -62,10 +62,15 @@
                     <th class="px-6 py-4 text-right">Action Controls</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 text-xs text-gray-600 font-semibold">
+            <tbody id="ordersTableBody" class="divide-y divide-gray-100 text-xs text-gray-600 font-semibold">
                 
                 @forelse($orders as $order)
-                <tr class="hover:bg-gray-50/40 transition group">
+                <tr class="order-row hover:bg-gray-50/40 transition group"
+                    data-id="{{ strtolower($order->id) }}"
+                    data-customer="{{ strtolower($order->user->name ?? '') }}"
+                    data-method="{{ strtolower($order->notes ?? '') }}"
+                    data-status-label="all">
+                    
                     <td class="px-6 py-5 text-center">
                         <input type="checkbox" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500/20">
                     </td>
@@ -109,7 +114,7 @@
                     <td class="px-6 py-5 text-gray-900 font-bold text-sm">
                         ${{ number_format($order->total_price ?? 0.00, 2) }}
                     </td>
-                    <td class="px-6 py-5">
+                    <td class="px-6 py-5 status-cell">
                         @if(($order->status ?? 'pending') === 'completed' || ($order->status ?? '') === 'served')
                             <span class="text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-block">Served & Done</span>
                         @elseif(($order->status ?? '') === 'cancelled')
@@ -132,7 +137,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr>
+                <tr id="emptyRowPlaceholder">
                     <td colspan="7" class="px-6 py-16 text-center text-gray-400 font-medium">
                         <div class="flex flex-col items-center justify-center gap-2">
                             <i class="fa-solid fa-inbox text-2xl text-gray-300"></i>
@@ -142,8 +147,99 @@
                 </tr>
                 @endforelse
 
+                <tr id="noMatchRowPlaceholder" class="hidden">
+                    <td colspan="7" class="px-6 py-16 text-center text-gray-400 font-medium bg-slate-50/50">
+                        <div class="flex flex-col items-center justify-center gap-2">
+                            <i class="fa-solid fa-magnifying-glass text-xl text-gray-300"></i>
+                            <span>No matching queue entries match your selected filter criteria.</span>
+                        </div>
+                    </td>
+                </tr>
+
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('orderSearchInput');
+    const methodSelect = document.getElementById('methodFilterSelect');
+    const statusSelect = document.getElementById('statusFilterSelect');
+    const resetBtn = document.getElementById('resetFiltersButton');
+    
+    const rows = document.querySelectorAll('.order-row');
+    const noMatchRow = document.getElementById('noMatchRowPlaceholder');
+    const liveCountBadge = document.getElementById('liveRecordsCount');
+
+    // Automatically calculate the initial text layout on status load cells
+    rows.forEach(row => {
+        const cellText = row.querySelector('.status-cell').textContent.trim().toLowerCase();
+        row.setAttribute('data-status-label', cellText);
+    });
+
+    function executeFilterEngine() {
+        const query = searchInput.value.trim().toLowerCase();
+        const selectedMethod = methodSelect.value;
+        const selectedStatus = statusSelect.value;
+        
+        let activeCounter = 0;
+
+        rows.forEach(row => {
+            const orderId = row.getAttribute('data-id');
+            const customerName = row.getAttribute('data-customer');
+            const methodNotes = row.getAttribute('data-method');
+            const statusLabel = row.getAttribute('data-status-label');
+
+            // 1. Text Query Filter Rule (Matches Order ID string or Customer Profile Name)
+            const matchesText = orderId.includes(query) || customerName.includes(query);
+
+            // 2. Delivery Method Check Rule 
+            let matchesMethod = false;
+            if (selectedMethod === 'all') {
+                matchesMethod = true;
+            } else if (selectedMethod === 'dine in') {
+                matchesMethod = methodNotes.includes('dine in') || methodNotes.includes('table');
+            } else if (selectedMethod === 'delivery service') {
+                matchesMethod = !methodNotes.includes('dine in') && !methodNotes.includes('table');
+            }
+
+            // 3. Queue Order Status Check Rule
+            const matchesStatus = (selectedStatus === 'all' || statusLabel === selectedStatus);
+
+            // Trigger grid display visibility rules
+            if (matchesText && matchesMethod && matchesStatus) {
+                row.classList.remove('hidden');
+                activeCounter++;
+            } else {
+                row.classList.add('hidden');
+            }
+        });
+
+        // Toggle No Results table row placeholder fallback banner element
+        if (activeCounter === 0 && rows.length > 0) {
+            noMatchRow.classList.remove('hidden');
+        } else {
+            noMatchRow.classList.add('hidden');
+        }
+
+        // Dynamically update the live counts counter badge matching screen records
+        if (liveCountBadge) {
+            liveCountBadge.textContent = activeCounter;
+        }
+    }
+
+    // Bind interaction event listeners
+    searchInput.addEventListener('input', executeFilterEngine);
+    methodSelect.addEventListener('change', executeFilterEngine);
+    statusSelect.addEventListener('change', executeFilterEngine);
+
+    resetBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        methodSelect.value = 'all';
+        statusSelect.value = 'all';
+        executeFilterEngine();
+    });
+});
+</script>
 @endsection

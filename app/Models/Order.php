@@ -9,7 +9,10 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'total_price',
         'total_amount',
+        'items_summary',
+        'notes',
         'status'
     ];
 
@@ -23,4 +26,3 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 }
-

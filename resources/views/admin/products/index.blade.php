@@ -35,24 +35,24 @@
     </div>
 
     <div>
-        <select class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
-            <option>All Prices</option>
-            <option>$0 - $25</option>
-            <option>$25 - $50</option>
-            <option>$50 - $100</option>
+        <select id="priceFilterSelect" class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
+            <option value="all">All Prices</option>
+            <option value="0-25">$0 - $25</option>
+            <option value="25-50">$25 - $50</option>
+            <option value="50-100">$50 - $100</option>
         </select>
     </div>
 
     <div>
-        <select class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
-            <option>All Status</option>
-            <option>Active</option>
-            <option>No Active</option>
+        <select id="statusFilterSelect" class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition font-semibold text-gray-500">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">No Active</option>
         </select>
     </div>
 
-    <button class="bg-white border border-gray-200 text-gray-600 font-bold text-xs py-2.5 rounded-xl transition hover:bg-gray-50 flex items-center justify-center gap-2">
-        <i class="fa-solid fa-sliders text-gray-400 text-xs"></i> Filter
+    <button id="resetFiltersBtn" class="bg-white border border-gray-200 text-gray-600 font-bold text-xs py-2.5 rounded-xl transition hover:bg-gray-50 flex items-center justify-center gap-2">
+        <i class="fa-solid fa-sliders text-gray-400 text-xs"></i> Reset Filter
     </button>
 </div>
 
@@ -75,7 +75,9 @@
                 @forelse($products as $product)
                     <tr class="product-row hover:bg-gray-50/40 transition group" 
                         data-category="{{ $product->category_id ?? ($product->category->id ?? '') }}"
-                        data-name="{{ strtolower($product->name) }}">
+                        data-name="{{ strtolower($product->name) }}"
+                        data-price="{{ $product->price }}"
+                        data-status="{{ $product->stock > 0 ? 'active' : 'inactive' }}">
                         
                         <td class="px-6 py-5 text-center">
                             <input type="checkbox" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500/20">
@@ -84,7 +86,7 @@
                         <td class="px-6 py-5 flex items-center gap-4">
                             <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100 flex items-center justify-center">
                                 @if($product->image)
-                                    <img src="{{ asset('storage/' . $product->image) }}" alt="Product Image" class="w-full h-full object-cover">
+                                    <img src="{{ filter_var($product->image, FILTER_VALIDATE_URL) ? $product->image : asset('storage/' . $product->image) }}" alt="Product Image" class="w-full h-full object-cover">
                                 @else
                                     <div class="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50">
                                         <i class="fa-solid fa-bowl-food text-base"></i>
@@ -153,23 +155,49 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const categoryFilter = document.getElementById('categoryFilterSelect');
+        const priceFilter = document.getElementById('priceFilterSelect');
+        const statusFilter = document.getElementById('statusFilterSelect');
         const searchInput = document.getElementById('productSearchInput');
+        const resetBtn = document.getElementById('resetFiltersBtn');
         const rows = document.querySelectorAll('.product-row');
         const noMatchRow = document.getElementById('noMatchRow');
 
         function filterProducts() {
             const selectedCategory = categoryFilter.value;
+            const selectedPriceRange = priceFilter.value;
+            const selectedStatus = statusFilter.value;
             const searchQuery = searchInput.value.toLowerCase().trim();
             let visibleCount = 0;
 
             rows.forEach(row => {
                 const rowCategory = row.getAttribute('data-category');
                 const rowName = row.getAttribute('data-name');
+                const rowPrice = parseFloat(row.getAttribute('data-price')) || 0;
+                const rowStatus = row.getAttribute('data-status');
 
-                const matchesCategory = (selectedCategory === 'all' || rowCategory === selectedCategory);
+                // 1. Check Search Match
                 const matchesSearch = rowName.includes(searchQuery);
 
-                if (matchesCategory && matchesSearch) {
+                // 2. Check Category Match
+                const matchesCategory = (selectedCategory === 'all' || rowCategory === selectedCategory);
+
+                // 3. Check Status Match
+                const matchesStatus = (selectedStatus === 'all' || rowStatus === selectedStatus);
+
+                // 4. Check Price Range Match
+                let matchesPrice = false;
+                if (selectedPriceRange === 'all') {
+                    matchesPrice = true;
+                } else if (selectedPriceRange === '0-25') {
+                    matchesPrice = (rowPrice >= 0 && rowPrice <= 25);
+                } else if (selectedPriceRange === '25-50') {
+                    matchesPrice = (rowPrice > 25 && rowPrice <= 50);
+                } else if (selectedPriceRange === '50-100') {
+                    matchesPrice = (rowPrice > 50 && rowPrice <= 100);
+                }
+
+                // Combine all conditions together
+                if (matchesSearch && matchesCategory && matchesStatus && matchesPrice) {
                     row.classList.remove('hidden');
                     visibleCount++;
                 } else {
@@ -177,6 +205,7 @@
                 }
             });
 
+            // Handle empty search results state
             if (visibleCount === 0 && rows.length > 0) {
                 noMatchRow.classList.remove('hidden');
             } else {
@@ -184,7 +213,20 @@
             }
         }
 
+        // Reset all inputs back to original layout positions
+        if(resetBtn) {
+            resetBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                categoryFilter.value = 'all';
+                priceFilter.value = 'all';
+                statusFilter.value = 'all';
+                filterProducts();
+            });
+        }
+
         categoryFilter.addEventListener('change', filterProducts);
+        priceFilter.addEventListener('change', filterProducts);
+        statusFilter.addEventListener('change', filterProducts);
         searchInput.addEventListener('input', filterProducts);
     });
 </script>

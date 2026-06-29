@@ -12,23 +12,20 @@ Route::get('/', function () {
     return redirect()->route('admin.login');
 });
 
-//Admin Guest Routes (Login / Authentication)
-// Restrict these routes to guests only so logged-in admins don't re-login
+// Admin Guest Routes (Login / Authentication)
 Route::prefix('admin')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
     Route::post('/login', [AdminAuthController::class, 'login']);
 });
-// Logout route requires an active web session
+
+// Logout action requires an active web session
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout')->middleware('auth');
 
-//Protected Admin Panel Panel Routes (Blade Only)
-// These routes are fully protected by Laravel's built-in session auth and your custom AdminMiddleware
+// Protected Admin Panel Panel Routes (Blade Sessions Only)
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     
-    // 1. Central Admin Dashboard Statistics Page
-    Route::get('/dashboard', function () { 
-        return view('admin.dashboard'); 
-    })->name('admin.dashboard');
+    // 1. Central Admin Dashboard Statistics Page (CORRECTED INTERFACE COUPLING)
+    Route::get('/dashboard', [AdminOrderController::class, 'dashboard'])->name('admin.dashboard');
     
     // 2. Full Category CRUD Routes
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -49,9 +46,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     // 4. Read-Only Platform Monitoring Routes (Orders and Customer tracking)
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders.index');
     Route::get('/orders/{id}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
-    Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
-
-    //Custemer
     Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
 
     // Profile Settings Routes
