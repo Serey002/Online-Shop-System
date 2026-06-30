@@ -36,19 +36,18 @@ class ReviewApiController extends Controller
     /**
      * Store a client review ticket entry inside the database storage link.
      */
-    public function store(Request $request)
+    public function store(Request $request, $productId) // 🔧 FIXED: Accept $productId from the URL routing
     {
         $user = $request->user();
 
         $validated = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
             'rating' => ['required', 'integer', 'min:1', 'max:5'], // Forces valid 1-5 star matrix criteria
             'comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
         // Prevent duplicated spam reviews by a single user on the same product item if desired
         $existingReview = Review::where('user_id', $user->id)
-                                ->where('product_id', $validated['product_id'])
+                                ->where('product_id', $productId) // 🔧 FIXED: Use the URL parameter
                                 ->first();
 
         if ($existingReview) {
@@ -60,7 +59,7 @@ class ReviewApiController extends Controller
 
         $review = Review::create([
             'user_id' => $user->id,
-            'product_id' => $validated['product_id'],
+            'product_id' => $productId, // 🔧 FIXED: Use the URL parameter
             'rating' => $validated['rating'],
             'comment' => $validated['comment'] ?? null,
         ]);

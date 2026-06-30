@@ -80,4 +80,22 @@ class OrderApiController extends Controller
             'data' => $order
         ], 200);
     }
+
+    // Make sure this is in App\Http\Controllers\Api\OrderApiController.php
+    public function updateStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'string', 'in:preparing,with courier,served & done,cancelled']
+        ]);
+
+        $order = \App\Models\Order::findOrFail($id);
+        $order->status = $validated['status'];
+        $order->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Status updated successfully',
+            'data' => $order
+        ]);
+    }
 }

@@ -12,10 +12,11 @@ class AdminUserController extends Controller
     public function index()
     {
         // Fetch users where is_admin is false (regular customers)
-        $users = User::select('users.*') // <-- Add this line right here!
+        $users = User::select('users.*') 
             ->where('is_admin', false)
-            ->withCount('orders') 
+            ->withCount('orders') // Keeps working perfectly thanks to your User model update!
             ->addSelect([
+                // Reverted back to the original database column string name
                 'total_spent' => Order::selectRaw('COALESCE(SUM(total_amount), 0)')
                     ->whereColumn('user_id', 'users.id')
             ])

@@ -75,7 +75,7 @@ class AdminOrderController extends Controller
     /**
      * 🛒 List all customer orders on the dedicated management table
      */
-    public function index()
+   public function index()
     {
         // Eager load the user relationship to protect performance against N+1 loop bugs
         $orders = Order::with('user')->orderBy('created_at', 'desc')->get();

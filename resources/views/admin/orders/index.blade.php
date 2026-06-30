@@ -15,6 +15,12 @@
     </div>
 </div>
 
+@if(session('success'))
+<div class="mb-4 p-4 text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded-xl">
+    {{ session('success') }}
+</div>
+@endif
+
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
     <div class="relative lg:col-span-2">
         <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
@@ -58,18 +64,27 @@
                     <th class="px-6 py-4">Customer Details</th>
                     <th class="px-6 py-4">Ordered Items Breakdown</th>
                     <th class="px-6 py-4">Total Bill</th>
-                    <th class="px-6 py-4">Status</th>
+                    <th class="px-6 py-4">Status Update</th>
                     <th class="px-6 py-4 text-right">Action Controls</th>
                 </tr>
             </thead>
             <tbody id="ordersTableBody" class="divide-y divide-gray-100 text-xs text-gray-600 font-semibold">
                 
                 @forelse($orders as $order)
+                @php 
+                    $cleanStatus = strtolower($order->status ?? 'preparing');
+                    if ($cleanStatus === 'completed' || $cleanStatus === 'served') {
+                        $cleanStatus = 'served & done';
+                    }
+                    if ($cleanStatus === 'shipping' || $cleanStatus === 'courier') {
+                        $cleanStatus = 'with courier';
+                    }
+                @endphp
                 <tr class="order-row hover:bg-gray-50/40 transition group"
                     data-id="{{ strtolower($order->id) }}"
                     data-customer="{{ strtolower($order->user->name ?? '') }}"
                     data-method="{{ strtolower($order->notes ?? '') }}"
-                    data-status-label="all">
+                    data-status-label="{{ $cleanStatus }}">
                     
                     <td class="px-6 py-5 text-center">
                         <input type="checkbox" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500/20">
@@ -114,24 +129,35 @@
                     <td class="px-6 py-5 text-gray-900 font-bold text-sm">
                         ${{ number_format($order->total_price ?? 0.00, 2) }}
                     </td>
+                    
                     <td class="px-6 py-5 status-cell">
-                        @if(($order->status ?? 'pending') === 'completed' || ($order->status ?? '') === 'served')
-                            <span class="text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-block">Served & Done</span>
-                        @elseif(($order->status ?? '') === 'cancelled')
-                            <span class="text-rose-600 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-block">Cancelled</span>
-                        @elseif(($order->status ?? '') === 'shipping' || ($order->status ?? '') === 'courier')
-                            <span class="text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-block">With Courier</span>
-                        @else
-                            <span class="text-amber-600 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider inline-block">Preparing</span>
-                        @endif
+                        <form action="/api/orders/{{ $order->id }}/status" method="POST" id="status-form-{{ $order->id }}">
+                            @csrf
+                            @method('PATCH')
+                            <select 
+                                name="status" 
+                                onchange="document.getElementById('status-form-{{ $order->id }}').submit();"
+                                class="text-[10px] font-bold uppercase tracking-wider rounded-lg px-2.5 py-1.5 border cursor-pointer focus:outline-none focus:ring-1 focus:ring-orange-500/40 transition
+                                {{ $cleanStatus === 'preparing' ? 'text-amber-600 bg-amber-50 border-amber-200' : '' }}
+                                {{ $cleanStatus === 'with courier' ? 'text-blue-600 bg-blue-50 border-blue-200' : '' }}
+                                {{ $cleanStatus === 'served & done' ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : '' }}
+                                {{ $cleanStatus === 'cancelled' ? 'text-rose-600 bg-rose-50 border-rose-200' : '' }}"
+                            >
+                                <option value="preparing" {{ $cleanStatus === 'preparing' ? 'selected' : '' }}>Preparing</option>
+                                <option value="with courier" {{ $cleanStatus === 'with courier' ? 'selected' : '' }}>With Courier</option>
+                                <option value="served & done" {{ $cleanStatus === 'served & done' ? 'selected' : '' }}>Served & Done</option>
+                                <option value="cancelled" {{ $cleanStatus === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            </select>
+                        </form>
                     </td>
+                    
                     <td class="px-6 py-5 text-right">
                         <div class="flex items-center justify-end gap-2 text-sm">
                             <button title="Print Kitchen Receipt" class="text-gray-400 hover:text-gray-900 transition p-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg">
                                 <i class="fa-solid fa-print"></i>
                             </button>
-                            <button title="Update Progress Status" class="text-gray-400 hover:text-orange-600 transition p-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg">
-                                <i class="fa-regular fa-circle-check"></i>
+                            <button title="View Details" class="text-gray-400 hover:text-orange-600 transition p-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg">
+                                <i class="fa-solid fa-eye"></i>
                             </button>
                         </div>
                     </td>
@@ -172,12 +198,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const noMatchRow = document.getElementById('noMatchRowPlaceholder');
     const liveCountBadge = document.getElementById('liveRecordsCount');
 
-    // Automatically calculate the initial text layout on status load cells
-    rows.forEach(row => {
-        const cellText = row.querySelector('.status-cell').textContent.trim().toLowerCase();
-        row.setAttribute('data-status-label', cellText);
-    });
-
     function executeFilterEngine() {
         const query = searchInput.value.trim().toLowerCase();
         const selectedMethod = methodSelect.value;
@@ -191,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const methodNotes = row.getAttribute('data-method');
             const statusLabel = row.getAttribute('data-status-label');
 
-            // 1. Text Query Filter Rule (Matches Order ID string or Customer Profile Name)
+            // 1. Text Query Filter Rule
             const matchesText = orderId.includes(query) || customerName.includes(query);
 
             // 2. Delivery Method Check Rule 
@@ -199,9 +219,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (selectedMethod === 'all') {
                 matchesMethod = true;
             } else if (selectedMethod === 'dine in') {
-                matchesMethod = methodNotes.includes('dine in') || methodNotes.includes('table');
+                matchesMethod = methodNotes.includes('dine in') || methodNotes.includes('table') || methodNotes.includes('cash');
             } else if (selectedMethod === 'delivery service') {
-                matchesMethod = !methodNotes.includes('dine in') && !methodNotes.includes('table');
+                matchesMethod = methodNotes.includes('phnom penh') || methodNotes.includes('cambodia') || (!methodNotes.includes('dine in') && !methodNotes.includes('table'));
             }
 
             // 3. Queue Order Status Check Rule
@@ -240,6 +260,9 @@ document.addEventListener('DOMContentLoaded', function () {
         statusSelect.value = 'all';
         executeFilterEngine();
     });
+
+    // Execute filter automatically on load to apply initial stats
+    executeFilterEngine();
 });
 </script>
 @endsection
