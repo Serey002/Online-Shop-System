@@ -59,6 +59,32 @@
             </div>
         </div>
 
+        <hr class="border-gray-100">
+
+        <div>
+            <span class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Change Password</span>
+            <p class="text-[11px] text-gray-400 font-medium mb-4">Leave blank if you don't want to change your password.</p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-500">Current Password</label>
+                    <input type="password" name="current_password" class="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-orange-500/50 focus:bg-white transition" placeholder="Enter current password">
+                    @error('current_password') <span class="text-rose-500 font-bold text-[11px] block">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-500">New Password</label>
+                    <input type="password" name="new_password" class="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-orange-500/50 focus:bg-white transition" placeholder="Enter new password">
+                    @error('new_password') <span class="text-rose-500 font-bold text-[11px] block">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-500">Confirm New Password</label>
+                    <input type="password" name="new_password_confirmation" class="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-orange-500/50 focus:bg-white transition" placeholder="Confirm new password">
+                </div>
+            </div>
+        </div>
+
         <div class="pt-4 border-t border-gray-100 flex items-center justify-end">
             <button type="submit" class="bg-orange-600 text-white font-bold text-xs px-6 py-3 rounded-xl shadow-sm hover:bg-orange-700 transition tracking-wide flex items-center gap-2">
                 <i class="fa-solid fa-circle-check text-xs"></i> Persist Account Data

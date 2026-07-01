@@ -38,8 +38,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
-    Route::put('/user/profile', [AuthApiController::class, 'updateProfile']); 
-    Route::post('/logout', [AuthApiController::class, 'logout']);            
+    Route::put('/user/profile', [AuthApiController::class, 'updateProfile']);
+    Route::post('/user/profile', [AuthApiController::class, 'updateProfile']); // Support POST for multipart/form-data
+    Route::put('/user/change-password', [AuthApiController::class, 'changePassword']);
+    Route::post('/logout', [AuthApiController::class, 'logout']);
 
     // Order Management Endpoints
     Route::get('/orders', [OrderApiController::class, 'index']);         // Get order histories
