@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\OrderApiController;
 use App\Http\Controllers\Api\ReviewApiController;
+use App\Http\Controllers\Api\SocialLoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +26,10 @@ Route::get('/categories', [CategoryApiController::class, 'index']);
 
 // Public Product Reviews Feedback
 Route::get('/products/{product_id}/reviews', [ReviewApiController::class, 'getProductReviews']);
+
+// Social Login
+Route::get('/auth/{provider}/redirect', [SocialLoginController::class, 'redirect']);
+Route::get('/auth/{provider}/callback', [SocialLoginController::class, 'callback']);
 
 
 /*
