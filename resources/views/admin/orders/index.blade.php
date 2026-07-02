@@ -15,11 +15,6 @@
     </div>
 </div>
 
-@if(session('success'))
-<div class="mb-4 p-4 text-xs font-bold text-green-700 bg-green-50 border border-green-200 rounded-xl">
-    {{ session('success') }}
-</div>
-@endif
 
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
     <div class="relative lg:col-span-2">
@@ -131,7 +126,7 @@
                     </td>
                     
                     <td class="px-6 py-5 status-cell">
-                        <form action="/api/orders/{{ $order->id }}/status" method="POST" id="status-form-{{ $order->id }}">
+                        <form action="{{ route('admin.orders.status.update', $order->id) }}" method="POST" id="status-form-{{ $order->id }}">
                             @csrf
                             @method('PATCH')
                             <select 

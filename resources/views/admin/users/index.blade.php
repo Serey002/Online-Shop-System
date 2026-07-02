@@ -68,8 +68,12 @@
                         <input type="checkbox" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500/20">
                     </td>
                     <td class="px-6 py-5 flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 border border-orange-200 font-bold flex items-center justify-center uppercase tracking-wider text-xs">
-                            {{ strtoupper(substr($user->name ?? 'CS', 0, 2)) }}
+                        <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 border border-orange-200 font-bold flex items-center justify-center uppercase tracking-wider text-xs overflow-hidden flex-shrink-0">
+                            @if($user->image)
+                                <img src="{{ asset('storage/' . $user->image) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
+                            @else
+                                {{ strtoupper(substr($user->name ?? 'CS', 0, 2)) }}
+                            @endif
                         </div>
                         <div>
                             <span class="text-gray-900 font-bold block text-sm group-hover:text-orange-600 transition">

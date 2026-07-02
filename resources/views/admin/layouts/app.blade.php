@@ -31,9 +31,9 @@
                 
                 <a href="{{ route('admin.orders.index') }}" class="flex items-center justify-between px-4 py-3 rounded-xl transition {{ request()->routeIs('admin.orders.*') ? 'bg-orange-50 text-orange-600 font-semibold' : 'hover:bg-gray-50 hover:text-gray-900' }}">
                     <span class="flex items-center gap-3"><i class="fa-solid fa-receipt w-5"></i> Order</span>
-                    <span class="bg-orange-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                    {{-- <span class="bg-orange-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
                         {{ \App\Models\Order::where('status', 'pending')->count() }}
-                    </span>
+                    </span> --}}
                 </a>
 
                 <a href="{{ route('admin.users.index') }}" class="flex items-center justify-between px-4 py-3 rounded-xl transition {{ request()->routeIs('admin.users.*') ? 'bg-orange-50 text-orange-600 font-semibold' : 'hover:bg-gray-50 hover:text-gray-900' }}">

@@ -43,9 +43,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 
-    // 4. Read-Only Platform Monitoring Routes (Orders and Customer tracking)
+    // 4. Orders Management Routes (Listing, Viewing, Status Updates)
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders.index');
     Route::get('/orders/{id}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
+    Route::patch('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status.update');
     Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
 
     // Profile Settings Routes
