@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\TelegramService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -95,6 +96,13 @@ class AdminOrderController extends Controller
         $order = Order::findOrFail($id);
         $order->status = $validated['status'];
         $order->save();
+
+        // Send Telegram notification to admin group
+        try {
+            app(TelegramService::class)->notifyOrderStatusChange($order);
+        } catch (\Exception $e) {
+            logger()->error('Telegram status change notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('admin.orders.index')->with('success', 'Order status updated successfully.');
     }

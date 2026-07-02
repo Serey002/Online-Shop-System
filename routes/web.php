@@ -12,6 +12,9 @@ Route::get('/', function () {
     return redirect()->route('admin.login');
 });
 
+// Telegram Bot Webhook (No CSRF verification needed - Telegram calls this)
+Route::post('/telegram/webhook', [App\Http\Controllers\Api\TelegramController::class, 'webhook'])->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+
 // Admin Guest Routes (Login / Authentication)
 Route::prefix('admin')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 
 class OrderApiController extends Controller
@@ -50,6 +51,13 @@ class OrderApiController extends Controller
             'status' => 'pending', // Will trigger "Preparing" badge on your dashboard view
         ]);
 
+        // Send Telegram notification to admin group
+        try {
+            app(TelegramService::class)->notifyNewOrder($order);
+        } catch (\Exception $e) {
+            logger()->error('Telegram new order notification failed: ' . $e->getMessage());
+        }
+
         return response()->json([
             'status' => 'success',
             'message' => 'Your food kitchen order ticket has been successfully registered!',
@@ -91,6 +99,13 @@ class OrderApiController extends Controller
         $order = \App\Models\Order::findOrFail($id);
         $order->status = $validated['status'];
         $order->save();
+
+        // Send Telegram notification to admin group
+        try {
+            app(TelegramService::class)->notifyOrderStatusChange($order);
+        } catch (\Exception $e) {
+            logger()->error('Telegram status change notification failed: ' . $e->getMessage());
+        }
 
         return response()->json([
             'status' => 'success',
